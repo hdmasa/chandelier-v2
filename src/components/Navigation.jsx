@@ -1,0 +1,227 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Button, 
+  IconButton, 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemText,
+  Box,
+  useTheme,
+  useMediaQuery,
+  Menu,
+  MenuItem
+} from '@mui/material';
+import { Menu as MenuIcon, Close as CloseIcon, ExpandMore } from '@mui/icons-material';
+import Image from 'next/image';
+
+const Navigation = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+
+  // Persian navigation items
+  const navItems = [
+    { name: 'معرفی کسب و کار', href: '#hero', id: 'hero' },
+    { name: 'محصولات', href: '#products', id: 'products' },
+    { name: 'دسته بندی', href: '#categories', id: 'categories' },
+    { name: 'درباره ما', href: '#about', id: 'about' },
+    { name: 'تماس با ما', href: '#contact', id: 'contact' },
+  ];
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleNavClick = (href) => {
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setMobileOpen(false);
+    setAnchorEl(null);
+  };
+
+  const drawer = (
+    <Box sx={{ width: 280, direction: 'rtl' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderBottom: '1px solid #E0E0E0' }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 'bold',
+            color: '#2C1810',
+            fontSize: '1.2rem'
+          }}
+        >
+          منو
+        </Typography>
+        <IconButton onClick={handleDrawerToggle}>
+          <CloseIcon sx={{ color: '#8B4513' }} />
+        </IconButton>
+      </Box>
+      <List sx={{ px: 2, py: 1 }}>
+        {navItems.map((item) => (
+          <ListItem 
+            key={item.name} 
+            sx={{ 
+              cursor: 'pointer',
+              borderRadius: 1,
+              mb: 1,
+              '&:hover': {
+                backgroundColor: 'rgba(212, 175, 55, 0.1)'
+              }
+            }}
+            onClick={() => handleNavClick(item.href)}
+          >
+            <ListItemText 
+              primary={item.name}
+              sx={{ 
+                textAlign: 'right',
+                '& .MuiListItemText-primary': {
+                  fontSize: '1.1rem',
+                  fontWeight: 500,
+                  color: '#2C1810'
+                }
+              }}
+            />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+
+  return (
+    <>
+      <AppBar 
+        position="fixed" 
+        elevation={0}
+        sx={{ 
+          backgroundColor: isScrolled ? 'rgba(255, 254, 254, 0.46)' : 'transparent',
+          backdropFilter: isScrolled ? 'blur(10px)' : 'none',
+          boxShadow: isScrolled ? '0 2px 20px rgba(0,0,0,0.1)' : 'none',
+          transition: 'all 0.1s ease-in-out',
+          borderBottom: isScrolled ? '1px solid rgba(139, 69, 19, 0.1)' : 'none'
+        }}
+      >
+        <Toolbar sx={{ justifyContent: 'space-between', py: 1, px: { xs: 2, md: 4 } }}>
+          {/* Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Image
+              src="/download.svg"
+              alt="Persian Chandeliers Logo"
+              width={70}
+              height={70}
+              style={{
+                filter: isScrolled ? 'none' : 'brightness(0) invert(1)'
+              }}
+            />
+            <Typography 
+              variant="h5" 
+              sx={{ 
+
+                fontWeight: 'bold',
+                color: isScrolled ? '#d5d3d3ff' : '#FFFEF7',
+                textDecoration: 'none',
+                fontSize: { xs: '1.2rem', md: '1.5rem' },
+                transition: 'color 0.3s ease-in-out'
+              }}
+            >
+              ستاره یخی
+            </Typography>
+          </Box>
+          
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {navItems.map((item) => (
+                <Button
+                  key={item.name}
+                  onClick={() => handleNavClick(item.href)}
+                  sx={{
+                    color: isScrolled ? '#ffffffff' : '#FFFEF7',
+                    fontWeight: 500,
+                    fontSize: '0.95rem',
+                    textTransform: 'none',
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                      backgroundColor: isScrolled ? 'rgba(139, 69, 19, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+                      color: isScrolled ? '#f0edebff' : '#FFFEF7'
+                    }
+                  }}
+                >
+                  {item.name}
+                </Button>
+              ))}
+            </Box>
+          )}
+
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <IconButton
+              onClick={handleDrawerToggle}
+              sx={{ 
+                color: isScrolled ? '#ffffffff' : '#FFFEF7',
+                transition: 'color 0.3s ease-in-out'
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+        </Toolbar>
+      </AppBar>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        anchor="right"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          display: { xs: 'block', lg: 'none' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: 280,
+            backgroundColor: '#FFFEF7',
+            direction: 'rtl'
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
+    </>
+  );
+};
+
+export default Navigation;
