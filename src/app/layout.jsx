@@ -1,13 +1,11 @@
-"use client";
+'use client';
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 import theme from "@/src/styles/theme";
 import stylisRTLPlugin from "stylis-plugin-rtl";
 import "../styles/globals.css";
-
-import Navigation from "@/src/components/Navigation";
-import Footer from "@/src/components/Footer";
+import ClientLayout from "./ClientLayout";
 
 const rtlCache = createCache({
   key: "muirtl",
@@ -21,9 +19,9 @@ export default function RootLayout({ children }) {
         <CacheProvider value={rtlCache}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Navigation/>
-            {children}
-            <Footer/>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
           </ThemeProvider>
         </CacheProvider>
       </body>

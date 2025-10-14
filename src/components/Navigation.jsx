@@ -13,27 +13,29 @@ import {
   ListItemText,
   Box,
   useTheme,
-  useMediaQuery,
-  Menu,
-  MenuItem
+  useMediaQuery
 } from '@mui/material';
-import { Menu as MenuIcon, Close as CloseIcon, ExpandMore } from '@mui/icons-material';
+import { Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const Navigation = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+  const router = useRouter();
 
-  // Persian navigation items
+  // Updated Persian navigation items
   const navItems = [
-    { name: 'معرفی کسب و کار', href: '#hero', id: 'hero' },
-    { name: 'محصولات', href: '#products', id: 'products' },
-    { name: 'دسته بندی', href: '#categories', id: 'categories' },
-    { name: 'درباره ما', href: '#about', id: 'about' },
-    { name: 'تماس با ما', href: '#contact', id: 'contact' },
+    { name: 'معرفی کسب و کار', href: '#hero', id: 'hero', type: 'section' },
+    { name: 'دسته بندی', href: '#categories', id: 'categories', type: 'section' },
+    { name: 'درباره ما', href: '#about', id: 'about', type: 'section' },
+    { name: 'پروسه', href: '#process', id: 'process', type: 'section' },
+    { name: 'سه بعدی', href: '#threed', id: 'threed', type: 'section' }, 
+    { name: 'محصولات', href: '/products', id: 'products', type: 'page' },
+    { name: 'تماس با ما', href: '#contact', id: 'contact', type: 'section' },
   ];
 
   // Handle scroll effect
@@ -51,21 +53,16 @@ const Navigation = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleMenuClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleNavClick = (href) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  const handleNavClick = (item) => {
+    if (item.type === 'section') {
+      const element = document.querySelector(item.href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (item.type === 'page') {
+      router.push(item.href);
     }
     setMobileOpen(false);
-    setAnchorEl(null);
   };
 
   const drawer = (
@@ -97,7 +94,7 @@ const Navigation = () => {
                 backgroundColor: 'rgba(212, 175, 55, 0.1)'
               }
             }}
-            onClick={() => handleNavClick(item.href)}
+            onClick={() => handleNavClick(item)}
           >
             <ListItemText 
               primary={item.name}
@@ -122,7 +119,7 @@ const Navigation = () => {
         position="fixed" 
         elevation={0}
         sx={{ 
-          backgroundColor: isScrolled ? 'rgba(255, 254, 254, 0.46)' : 'transparent',
+          backgroundColor: isScrolled ? 'rgba(0, 0, 0, 1)' : 'transparent',
           backdropFilter: isScrolled ? 'blur(10px)' : 'none',
           boxShadow: isScrolled ? '0 2px 20px rgba(0,0,0,0.1)' : 'none',
           transition: 'all 0.1s ease-in-out',
@@ -144,7 +141,6 @@ const Navigation = () => {
             <Typography 
               variant="h5" 
               sx={{ 
-
                 fontWeight: 'bold',
                 color: isScrolled ? '#d5d3d3ff' : '#FFFEF7',
                 textDecoration: 'none',
@@ -162,7 +158,7 @@ const Navigation = () => {
               {navItems.map((item) => (
                 <Button
                   key={item.name}
-                  onClick={() => handleNavClick(item.href)}
+                  onClick={() => handleNavClick(item)}
                   sx={{
                     color: isScrolled ? '#ffffffff' : '#FFFEF7',
                     fontWeight: 500,

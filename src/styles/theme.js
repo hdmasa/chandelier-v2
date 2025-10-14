@@ -10,9 +10,8 @@ const theme = createTheme(
       fontSize: 14,
     },
     palette: {
-      mode: "dark",
+    
       primary: { main: "#e7d393" },
-      background: { default: "#000000", paper: "#111111" },
       text: { primary: "#ffffff", secondary: "#e0e0e0" },
     },
     components: {

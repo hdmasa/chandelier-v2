@@ -1,41 +1,42 @@
+// src/components/ThreeDshowcase.jsx
 "use client";
 
 import React, { Suspense, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Environment } from "@react-three/drei";
+import { OrbitControls, useGLTF } from "@react-three/drei";
 import { Box, Typography } from "@mui/material";
 
 function Model({ url }) {
   const { scene } = useGLTF(url);
   const ref = useRef();
 
-  // Auto-rotation animation
   useFrame(() => {
     if (ref.current) {
-      ref.current.rotation.y += 0.005; // slow spin
+      ref.current.rotation.y += 0.005;
     }
   });
 
-  return <primitive ref={ref} object={scene} scale={1.5} position={[0, 0.4, 0]} />;
+  return (
+    <primitive ref={ref} object={scene} scale={1.5} position={[0, 0.4, 0]} />
+  );
 }
 
 export default function ThreeDShowcase() {
   return (
     <Box
       component="section"
+      id="threed"
       sx={{
         width: "100%",
-        minHeight: "300px",
-        backgroundColor: "#000000ff",
+        minHeight: { xs: "100px", md: "300px" },
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "flex-start",
+        position: "relative",
         textAlign: "center",
-        py: { xs: 2, md: 6 }, // reduced padding to bring closer
+        pt: "50px",
       }}
     >
-      {/* Title / Description */}
       <Typography
         variant="h4"
         sx={{
@@ -53,7 +54,7 @@ export default function ThreeDShowcase() {
         sx={{
           maxWidth: "700px",
           color: "#f2f2d6ff",
-          mb: 6, // less margin below text
+          mb: 6,
           lineHeight: 1.8,
           fontSize: { xs: "0.95rem", md: "1.1rem" },
         }}
@@ -61,20 +62,18 @@ export default function ThreeDShowcase() {
         لوستر را بچرخانید و در نمای 360 درجه نگاه کنید.
       </Typography>
 
-      {/* 3D Canvas */}
       <Box
         sx={{
           width: "100%",
-          height: { xs: "400px", md: "600px" },
+          height: { xs: "300px", md: "500px" },
           position: "relative",
-          mb: 5,
         }}
       >
-        <Canvas camera={{ position: [0, 1.5, 5], fov: 50 }}>
-          {/* Lighting setup */}
+        <Canvas camera={{ position: [0, 1.5, 1.5], fov: 50 }}>
+          {/* Simple lighting without external HDR files */}
           <ambientLight intensity={1.1} />
           <directionalLight position={[1, 5, 5]} intensity={1.2} />
-          <directionalLight position={[-3, -2, 2]} intensity={0.8} /> {/* bottom-left light */}
+          <directionalLight position={[-3, -2, 2]} intensity={0.8} />
           <pointLight position={[0, -3, -3]} intensity={0.5} />
 
           {/* 3D Model */}
@@ -82,8 +81,7 @@ export default function ThreeDShowcase() {
             <Model url="/models/chandelier.glb" />
           </Suspense>
 
-          {/* Environment + Controls */}
-          <Environment preset="studio" />
+          {/* Removed Environment to avoid HDR loading errors */}
           <OrbitControls enableZoom={false} enablePan enableRotate />
         </Canvas>
       </Box>

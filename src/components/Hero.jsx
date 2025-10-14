@@ -3,6 +3,7 @@
 import { Box, Typography, Button, Container } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const Hero = () => {
   const handleViewProducts = () => {
@@ -21,7 +22,7 @@ const Hero = () => {
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
       }}
     >
       {/* Background Image */}
@@ -108,7 +109,8 @@ const Hero = () => {
           </Typography>
 
           <Button
-            onClick={handleViewProducts}
+            component={Link}
+            href="/products"
             variant="outlined"
             size="large"
             endIcon={<ArrowForward />}
@@ -125,7 +127,7 @@ const Hero = () => {
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'rgba(255, 255, 255, 0)',
                 borderColor: '#D4AF37',
                 color: '#D4AF37',
                 transform: 'translateY(-2px)',

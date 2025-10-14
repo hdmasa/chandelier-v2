@@ -4,14 +4,13 @@ import React, { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Box, Typography, Button, IconButton } from "@mui/material";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 const products = [
-  { id: 1, title: "لوستر دوناتی", image: "/images/6.jpg", price: "3,200,000 تومان" },
-  { id: 2, title: "لوستر ابری", image: "/images/8.jpg", price: "2,850,000 تومان" },
-  { id: 3, title: "آباژور کلاسیک", image: "/images/1.jpg", price: "950,000 تومان" },
-  { id: 4, title: "لوستر طرح عدس", image: "/images/21.jpg", price: "4,100,000 تومان" },
+  { id: 1, title: "لوستر تخم مرغی", image: "/egg.png" },
+  { id: 2, title: "آباژور", image: "/aboj1.png" },
+  { id: 3, title: "لوستر دوناتی دو طبقه", image: "/donat1.png" },
+  { id: 4, title: "لوستر ابری", image: "/cloud1.png" },
+  { id: 5, title: "لوستر عدسی", image: "/adas1.png"}
 ];
 
 export default function Products() {
@@ -28,7 +27,7 @@ export default function Products() {
       component="section"
       sx={{
         width: "100%",
-        bgcolor: "#000",
+        bgcolor: "#ffffffff",
         color: "#fff",
         py: { xs: 6, md: 10 },
         px: { xs: 2, md: 8 },
@@ -41,7 +40,7 @@ export default function Products() {
         sx={{
           fontWeight: 700,
           mb: 5,
-          color: "#f5f5f5",
+          color: "#545454ff",
         }}
       >
         محصولات ما
@@ -70,7 +69,6 @@ export default function Products() {
                 flex: "0 0 auto",
                 width: { xs: "70%", sm: "45%", md: "23%" },
                 bgcolor: "#111",
-                borderRadius: 3,
                 overflow: "hidden",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
                 transition: "transform 0.3s, box-shadow 0.3s",
@@ -86,19 +84,13 @@ export default function Products() {
                   src={product.image}
                   alt={product.title}
                   fill
-                  style={{ objectFit: "object-cover" }}
+                  style={{ objectFit: "object-fit" }}
                 />
               </Box>
 
               {/* Info */}
-              <Box sx={{ p: 2 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 600, color: "#f5d76e", mb: 1 }}
-                >
                   {product.title}
-                </Typography>
-              </Box>
+
             </Box>
           ))}
         </Box>
@@ -111,16 +103,16 @@ export default function Products() {
           href="/products"
           variant="outlined"
           sx={{
-            borderColor: "#f5d76e",
-            color: "#f5d76e",
-            px: 4,
+            borderColor: "#000000ff",
+            color: "#000000ff",
+            px: 2,
             py: 1,
-            borderRadius: "50px",
+
             fontWeight: 600,
             "&:hover": {
-              bgcolor: "#f5d76e",
+              bgcolor: "#f7f7f7ff",
               color: "#000",
-              borderColor: "#f5d76e",
+              borderColor: "#000000ff",
               textAlign:"cente",
             },
           }}
