@@ -18,17 +18,20 @@ import {
 import { Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const ProductsNavbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeLink, setActiveLink] = useState('');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+  const pathname = usePathname();
 
   // Products page navigation items
   const navItems = [
     { name: 'خانه', href: '/', id: 'home' },
-    { name: 'همه محصولات', href: '/products', id: 'all-products' },
+    { name: 'محصولات', href: '/products', id: 'all-products' },
   ];
 
   // Handle scroll effect
@@ -42,17 +45,22 @@ const ProductsNavbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Detect current route for underline
+  useEffect(() => {
+    const current = navItems.find(item => item.href === pathname);
+    if (current) {
+      setActiveLink(current.id);
+    }
+  }, [pathname]);
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleNavClick = (href) => {
-    if (href === '/') {
-      return; // Let Next.js handle the route
-    }
-    
-    if (href.startsWith('#')) {
-      const element = document.querySelector(href);
+  const handleNavClick = (item) => {
+    setActiveLink(item.id);
+    if (item.href.startsWith('#')) {
+      const element = document.querySelector(item.href);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
@@ -89,7 +97,7 @@ const ProductsNavbar = () => {
                 backgroundColor: 'rgba(212, 175, 55, 0.1)'
               }
             }}
-            onClick={() => handleNavClick(item.href)}
+            onClick={() => handleNavClick(item)}
           >
             <ListItemText 
               primary={item.name}
@@ -146,12 +154,31 @@ const ProductsNavbar = () => {
             </Link>
           </Box>
           
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation (centered) */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
               {navItems.map((item) => (
-                item.href === '/' ? (
-                  <Link key={item.name} href={item.href} style={{ textDecoration: 'none' }}>
+                <Box
+                  key={item.name}
+                  sx={{
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: activeLink === item.id ? '100%' : '0%',
+                      height: '2px',
+                      backgroundColor: '#D4AF37',
+                      transition: 'width 0.3s ease-in-out'
+                    }
+                  }}
+                >
+                  <Link 
+                    href={item.href} 
+                    style={{ textDecoration: 'none' }} 
+                    onClick={() => setActiveLink(item.id)}
+                  >
                     <Button
                       sx={{
                         color: '#FFFEF7',
@@ -165,34 +192,13 @@ const ProductsNavbar = () => {
                         '&:hover': {
                           backgroundColor: 'rgba(255, 255, 255, 0.1)',
                           color: '#D4AF37'
-                        }
+                        },
                       }}
                     >
                       {item.name}
                     </Button>
                   </Link>
-                ) : (
-                  <Button
-                    key={item.name}
-                    onClick={() => handleNavClick(item.href)}
-                    sx={{
-                      color: '#FFFEF7',
-                      fontWeight: 500,
-                      fontSize: '0.95rem',
-                      textTransform: 'none',
-                      px: 2,
-                      py: 1,
-                      borderRadius: 2,
-                      transition: 'all 0.3s ease-in-out',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        color: '#D4AF37'
-                      }
-                    }}
-                  >
-                    {item.name}
-                  </Button>
-                )
+                </Box>
               ))}
             </Box>
           )}

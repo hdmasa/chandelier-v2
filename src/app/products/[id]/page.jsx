@@ -7,11 +7,10 @@ import {
   Button, 
   Container,
   Chip,
-  IconButton,
   Breadcrumbs,
   Link as MuiLink
 } from "@mui/material";
-import { ShoppingCart, Favorite, Share, Home, ShoppingBag } from "@mui/icons-material";
+import { ShoppingCart, Home, ShoppingBag } from "@mui/icons-material";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -37,7 +36,6 @@ export default function ProductDetailPage() {
     checkDeviceType();
     window.addEventListener('resize', checkDeviceType);
 
-    // Get product data based on ID
     if (params.id) {
       const productData = getProductById(params.id);
       setProduct(productData);
@@ -78,11 +76,9 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Desktop Layout
   const renderDesktop = () => (
     <Box sx={{ minHeight: '100vh', bgcolor: '#FFF', pt: '80px', direction: 'ltr' }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* Breadcrumb */}
         <Breadcrumbs sx={{ mb: 4, color: '#333' }} separator="›">
           <MuiLink component={Link} href="/" sx={{ color: '#D4AF37', textDecoration: 'none' }}>
             <Home sx={{ fontSize: 20, verticalAlign: 'middle', ml: 0.5 }} />
@@ -95,9 +91,8 @@ export default function ProductDetailPage() {
           <Typography sx={{ color: '#333' }}>{product.name}</Typography>
         </Breadcrumbs>
 
-        {/* Grid: Images + Info */}
         <Grid container spacing={4} sx={{ alignItems: 'flex-start' }}>
-          {/* Images Column */}
+          {/* Images */}
           <Grid item xs={12} md={6} lg={6}>
             <Box sx={{ position: 'sticky', top: '100px' }}>
               <Box sx={{ mb: 3, borderRadius: 2, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
@@ -122,7 +117,7 @@ export default function ProductDetailPage() {
                       border: selectedImage === index ? '2px solid #D4AF37' : '1px solid #ddd',
                       opacity: selectedImage === index ? 1 : 0.7,
                       transition: 'all 0.3s ease',
-                      flexShrink: 0
+                      flexShrink: 0,
                     }}
                     onClick={() => setSelectedImage(index)}
                   >
@@ -139,7 +134,7 @@ export default function ProductDetailPage() {
             </Box>
           </Grid>
 
-          {/* Info Column */}
+          {/* Info */}
           <Grid item xs={12} md={6} lg={6}>
             <Box sx={{ color: '#333', pr: { md: 2 } }}>
               {/* Tags */}
@@ -154,12 +149,10 @@ export default function ProductDetailPage() {
                 ))}
               </Box>
 
-              {/* Title */}
+              {/* Title + Category */}
               <Typography variant="h3" sx={{ mb: 2, fontWeight: 'bold', fontSize: { xs: '1.8rem', md: '2.2rem' } }}>
                 {product.name}
               </Typography>
-
-              {/* Category */}
               <Typography variant="h6" sx={{ color: '#666', mb: 3, fontSize: '1.1rem' }}>
                 دسته: {product.category}
               </Typography>
@@ -181,117 +174,108 @@ export default function ProductDetailPage() {
                 {product.fullDescription}
               </Typography>
 
-              {/* Features */}
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="h6" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
-                  ویژگی‌های محصول:
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {product.features.map((feature, index) => (
-                    <Typography key={index} variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                      • {feature}
-                    </Typography>
-                  ))}
+              {/* Features Section */}
+              {product.features && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
+                    ویژگی‌ها:
+                  </Typography>
+                  <Box component="ul" sx={{ pl: 3, m: 0 }}>
+                    {product.features.map((feature, index) => (
+                      <Typography key={index} component="li" sx={{ mb: 1, color: '#333', fontSize: '1rem' }}>
+                        {feature}
+                      </Typography>
+                    ))}
+                  </Box>
                 </Box>
+              )}
+
+              {/* Quantity + Add to Cart */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                  mb: 4,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="h6" sx={{ minWidth: '60px', color: '#000' }}>تعداد:</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #000', borderRadius: 1 }}>
+                    <Button onClick={() => setQuantity(q => Math.max(1, q - 1))} sx={{ color: '#333', minWidth: '40px', fontSize: '1.2rem' }}>-</Button>
+                    <Typography sx={{ px: 3, minWidth: '60px', textAlign: 'center', fontSize: '1.2rem', color: '#000' }}>{quantity}</Typography>
+                    <Button onClick={() => setQuantity(q => q + 1)} sx={{ color: '#333', minWidth: '40px', fontSize: '1.2rem' }}>+</Button>
+                  </Box>
+                </Box>
+
+                <Button
+                  variant="contained"
+                  startIcon={<ShoppingCart />}
+                  disabled={!product.inStock}
+                  onClick={handleAddToCart}
+                  sx={{
+                    bgcolor: '#D4AF37',
+                    color: '#000',
+                    px: 6,
+                    py: 1.8,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    '&:hover': { bgcolor: '#b8941f' },
+                  }}
+                >
+                  {product.inStock ? 'افزودن به سبد خرید' : 'ناموجود'}
+                </Button>
               </Box>
             </Box>
           </Grid>
         </Grid>
 
-        {/* Quantity + Add to Cart + Specifications */}
-        <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* Quantity + Add to Cart */}
+        {/* Specifications Section */}
+        <Box sx={{ mt: 6, direction: 'ltr' }}>
+          <Typography variant="h6" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold', textAlign: 'left' }}>
+            مشخصات فنی:
+          </Typography>
           <Box
             sx={{
-              display:'flex',
-              width: '80%',
-              bgcolor: '#ffffffff',
-              borderRadius: 2,
-              mb:3,
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 2,
-              p: 3,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: 1,
+              textAlign: 'left',
             }}
           >
-            {/* Quantity */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="h6" sx={{ minWidth: '60px',color:'#000' }}>تعداد:</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #000000ff', borderRadius: 1 }}>
-                <Button onClick={() => setQuantity(q => Math.max(1, q - 1))} sx={{ color: '#333', minWidth: '40px', fontSize: '1.2rem' }}>-</Button>
-                <Typography sx={{ px: 3, minWidth: '60px', textAlign: 'center', fontSize: '1.2rem',color:'#000' }}>{quantity}</Typography>
-                <Button onClick={() => setQuantity(q => q + 1)} sx={{ color: '#333', minWidth: '40px', fontSize: '1.2rem' }}>+</Button>
-              </Box>
-            </Box>
-
-            {/* Add to Cart */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
-              <Button
-                variant="contained"
-                startIcon={<ShoppingCart />}
-                disabled={!product.inStock}
-                onClick={handleAddToCart}
+            {Object.entries(product.specifications).map(([key, value]) => (
+              <Box
+                key={key}
                 sx={{
-                  bgcolor: '#D4AF37',
-                  color: '#000',
-                  px: 6,
-                  py: 1.8,
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  '&:hover': { bgcolor: '#b8941f' },
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  flexDirection: 'row',
+                  py: 1.5,
+                  px: 3,
+                  borderBottom: '1px solid #eee',
+                  bgcolor: '#fffcfcff',
+                  borderRadius: 1,
                 }}
               >
-                {product.inStock ? 'افزودن به سبد خرید' : 'ناموجود'}
-              </Button>
-              <IconButton sx={{ color: '#333', border: '1px solid #ddd', bgcolor: 'white' }}>
-                <Favorite />
-              </IconButton>
-              <IconButton sx={{ color: '#333', border: '1px solid #ddd', bgcolor: 'white' }}>
-                <Share />
-              </IconButton>
-            </Box>
-          </Box>
-
-          {/* Specifications */}
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
-              مشخصات فنی:
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateRows: 'repeat(auto-fit, minmax(50px, 1fr))', gap: 1 }}>
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <Box
-                  key={key}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    py: 1,
-                    px: 1,
-                    borderBottom: '1px solid #eee',
-                    bgcolor: '#f9f9f9',
-                    borderRadius: 1,
-                    width:250,
-                  }}
-                >
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 'bold' }}>
-                    {key}:
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'medium',color:'#000' }}>
-                    {value}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
+                <Typography variant="body2" sx={{ color: '#666', fontWeight: 'bold' }}>
+                  {key}:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'medium', color: '#000' }}>
+                  {value}
+                </Typography>
+              </Box>
+            ))}
           </Box>
         </Box>
       </Container>
     </Box>
   );
 
-  // Mobile Layout
   const renderMobile = () => (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#FFF', pt: '70px', direction:'ltr' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#FFF', pt: '70px', direction: 'ltr' }}>
       <Container sx={{ py: 3 }}>
-        {/* Breadcrumb */}
         <Breadcrumbs sx={{ mb: 3, color: '#333', fontSize: '0.8rem' }}>
           <MuiLink component={Link} href="/" sx={{ color: '#D4AF37', textDecoration: 'none' }}>
             خانه
@@ -302,7 +286,6 @@ export default function ProductDetailPage() {
           <Typography sx={{ color: '#333' }}>{product.name}</Typography>
         </Breadcrumbs>
 
-        {/* Product Images */}
         <Box sx={{ mb: 3 }}>
           <Image
             src={product.images[selectedImage]}
@@ -330,7 +313,6 @@ export default function ProductDetailPage() {
           </Box>
         </Box>
 
-        {/* Product Info */}
         <Box sx={{ color: '#333' }}>
           <Typography variant="h5" sx={{ mb: 1, fontWeight: 'bold' }}>
             {product.name}
@@ -344,7 +326,23 @@ export default function ProductDetailPage() {
             {product.fullDescription}
           </Typography>
 
-          {/* Quantity Selector */}
+          {/* Features */}
+          {product.features && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
+                ویژگی‌ها:
+              </Typography>
+              <Box component="ul" sx={{ pl: 3, m: 0 }}>
+                {product.features.map((feature, index) => (
+                  <Typography key={index} component="li" sx={{ mb: 1, color: '#333', fontSize: '0.95rem' }}>
+                    {feature}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* Quantity */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
             <Typography>تعداد:</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #ddd', borderRadius: 1 }}>
@@ -377,9 +375,9 @@ export default function ProductDetailPage() {
               color: '#000',
               py: 1,
               mb: 3,
-              width:'60vw',
-              display:'flex',
-              justifyContent:'center',
+              width: '60vw',
+              display: 'flex',
+              justifyContent: 'center',
               '&:hover': {
                 bgcolor: '#bda553ff'
               }
@@ -389,21 +387,22 @@ export default function ProductDetailPage() {
           </Button>
 
           {/* Specifications */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
+          <Box sx={{ mb: 3, direction: 'ltr' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold', textAlign: 'left' }}>
               مشخصات فنی:
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, textAlign: 'left' }}>
               {Object.entries(product.specifications).map(([key, value]) => (
                 <Box
                   key={key}
                   sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
+                    flexDirection: 'row',
                     py: 1.5,
                     px: 2,
                     borderBottom: '1px solid #eee',
-                    bgcolor: '#f9f9f9',
+                    bgcolor: '#fffcfcff',
                     borderRadius: 1,
                   }}
                 >

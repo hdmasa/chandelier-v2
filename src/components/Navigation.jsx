@@ -23,29 +23,44 @@ import { useRouter } from 'next/navigation';
 const Navigation = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
   const router = useRouter();
 
-  // Updated Persian navigation items
   const navItems = [
     { name: 'معرفی کسب و کار', href: '#hero', id: 'hero', type: 'section' },
     { name: 'دسته بندی', href: '#categories', id: 'categories', type: 'section' },
     { name: 'درباره ما', href: '#about', id: 'about', type: 'section' },
     { name: 'پروسه', href: '#process', id: 'process', type: 'section' },
-    { name: 'سه بعدی', href: '#threed', id: 'threed', type: 'section' }, 
+    { name: 'سه بعدی', href: '#threed', id: 'threed', type: 'section' },
     { name: 'محصولات', href: '/products', id: 'products', type: 'page' },
     { name: 'تماس با ما', href: '#contact', id: 'contact', type: 'section' },
   ];
 
-  // Handle scroll effect
+  // Scroll effect for background change
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       setIsScrolled(scrollTop > 100);
+
+      // Determine active section for underline
+      const sections = navItems.filter(i => i.type === 'section');
+      let currentSection = '';
+      sections.forEach((item) => {
+        const el = document.querySelector(item.href);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 150 && rect.bottom >= 150) {
+            currentSection = item.id;
+          }
+        }
+      });
+      setActiveSection(currentSection);
     };
 
     window.addEventListener('scroll', handleScroll);
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -58,9 +73,11 @@ const Navigation = () => {
       const element = document.querySelector(item.href);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
+        setActiveSection(item.id);
       }
     } else if (item.type === 'page') {
       router.push(item.href);
+      setActiveSection(item.id);
     }
     setMobileOpen(false);
   };
@@ -152,30 +169,49 @@ const Navigation = () => {
             </Typography>
           </Box>
           
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation (centered) */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
               {navItems.map((item) => (
-                <Button
+                <Box
                   key={item.name}
-                  onClick={() => handleNavClick(item)}
                   sx={{
-                    color: isScrolled ? '#ffffffff' : '#FFFEF7',
-                    fontWeight: 500,
-                    fontSize: '0.95rem',
-                    textTransform: 'none',
-                    px: 2,
-                    py: 1,
-                    borderRadius: 2,
-                    transition: 'all 0.3s ease-in-out',
-                    '&:hover': {
-                      backgroundColor: isScrolled ? 'rgba(139, 69, 19, 0.1)' : 'rgba(255, 255, 255, 0.1)',
-                      color: isScrolled ? '#f0edebff' : '#FFFEF7'
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: activeSection === item.id ? '100%' : '0%',
+                      height: '2px',
+                      backgroundColor: '#D4AF37',
+                      transition: 'width 0.3s ease-in-out'
                     }
                   }}
                 >
-                  {item.name}
-                </Button>
+                  <Button
+                    onClick={() => handleNavClick(item)}
+                    sx={{
+                      color: isScrolled ? '#ffffffff' : '#FFFEF7',
+                      fontWeight: 500,
+                      fontSize: '0.95rem',
+                      textTransform: 'none',
+                      px: 2,
+                      py: 1,
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease-in-out',
+                      '&:hover': {
+                        backgroundColor: isScrolled ? 'rgba(139, 69, 19, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+                        color: isScrolled ? '#f0edebff' : '#FFFEF7',
+                      },
+                      '&:hover::after': {
+                        width: '100%',
+                      },
+                    }}
+                  >
+                    {item.name}
+                  </Button>
+                </Box>
               ))}
             </Box>
           )}
