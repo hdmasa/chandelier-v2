@@ -102,11 +102,11 @@ export default function VideoShowcase({
         {/* Text - Left Side (1/2 width) */}
         <div className="w-1/2 pb-[2vw] flex flex-col justify-center pr-[8vw]">
           <div className="text-right">
-            <h2 className="font-extrabold whitespace-pre-line leading-tight text-4xl">
+            <h2 className="font-extrabold  text-[#fff] whitespace-pre-line leading-tight text-4xl">
               {title}
             </h2>
 
-            <p className="text-base text-white mt-4">{description}</p>
+            <p className="text-base text-[#fff] mt-4">{description}</p>
 
             <Button
               onClick={handleViewProducts}
@@ -171,11 +171,11 @@ export default function VideoShowcase({
         {/* Text - Bottom (Full width with 20px padding) */}
         <div className="w-full px-[50px] mt-8">
           <div className="text-right">
-            <h2 className="font-extrabold whitespace-pre-line leading-tight text-3xl">
+            <h2 className="font-extrabold text-[#fff] whitespace-pre-line leading-tight text-3xl">
               {title}
             </h2>
 
-            <p className="text-base text-white mt-4">{description}</p>
+            <p className="text-base text-[#fff] mt-4">{description}</p>
 
             <Button
               onClick={handleViewProducts}
@@ -240,11 +240,11 @@ export default function VideoShowcase({
         {/* Text - Bottom (Full width with 20px padding) */}
         <div className="w-full px-[20px] mt-6">
           <div className="text-right">
-            <h2 className="font-extrabold whitespace-pre-line leading-tight text-2xl">
+            <h2 className="font-extrabold text-[#fff] whitespace-pre-line leading-tight text-2xl">
               {title}
             </h2>
 
-            <p className="text-sm text-white mt-4">{description}</p>
+            <p className="text-sm text-[#fff] mt-4">{description}</p>
 
             <Button
               onClick={handleViewProducts}

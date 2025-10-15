@@ -79,7 +79,7 @@ export default function Categories() {
                 className="object-cover transition-transform duration-500 group-hover:scale-110 p-[5px]"
               />
               <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-all" />
-              <h3 className="absolute bottom-6 w-full text-white text-xl font-semibold text-center">
+              <h3 className="absolute bottom-6 w-full text-[#fff] text-xl font-semibold text-center">
                 {categories[0].title}
               </h3>
             </Link>
@@ -101,7 +101,7 @@ export default function Categories() {
                 />
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-all" />
                 <div className="absolute bottom-4 w-full">
-                  <h3 className="text-white text-lg font-semibold text-center">
+                  <h3 className="text-[#fff] text-lg font-semibold text-center">
                     {cat.title}
                   </h3>
                 </div>
@@ -169,7 +169,7 @@ export default function Categories() {
             />
             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-all" />
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              <h3 className="text-white text-base font-semibold bg-black/70 px-4 py-2 rounded text-center whitespace-nowrap">
+              <h3 className="text-[#fff] text-base font-semibold bg-black/70 px-4 py-2 rounded text-center whitespace-nowrap">
                 {cat.title}
               </h3>
             </div>
