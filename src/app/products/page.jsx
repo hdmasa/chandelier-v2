@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -22,409 +23,276 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  // Detect device type
+  // Detect device type (desktop, tablet, mobile)
   useEffect(() => {
-    const checkDeviceType = () => {
+    const handleResize = () => {
       const width = window.innerWidth;
-      if (width >= 1024) setDeviceType("desktop");
-      else if (width >= 768) setDeviceType("tablet");
-      else setDeviceType("mobile");
+      setDeviceType(width >= 1024 ? "desktop" : width >= 768 ? "tablet" : "mobile");
     };
 
-    checkDeviceType();
-    window.addEventListener("resize", checkDeviceType);
-    return () => window.removeEventListener("resize", checkDeviceType);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ Corrected category IDs to match your data
-  const categories = [
-    { id: "all", name: " محصولات" },
-    { id: "لوستر", name: "لوستر" },
-    { id: "آباژور", name: "آباژور" },
-  ];
+  // Categories
+  const categories = useMemo(
+    () => [
+      { id: "all", name: "همه محصولات" },
+      { id: "لوستر", name: "لوستر" },
+      { id: "آباژور", name: "آباژور" },
+    ],
+    []
+  );
 
-  const products = getProductsByCategory(activeCategory);
+  // Products
+  const products = useMemo(() => getProductsByCategory(activeCategory), [activeCategory]);
 
-  // ✅ Filter by search text
-  const filteredProducts = products.filter((product) => {
+  // Filtered Products
+  const filteredProducts = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    const searchFields = [
-      product.name,
-      product.description,
-      product.fullDescription,
-      ...(product.features || []),
-      ...Object.values(product.specifications || {}),
-    ].join(" ").toLowerCase();
+    return products.filter((product) => {
+      const combinedText = [
+        product.name,
+        product.description,
+        product.fullDescription,
+        ...(product.features || []),
+        ...Object.values(product.specifications || {}),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return combinedText.includes(query);
+    });
+  }, [products, searchQuery]);
 
-    return searchFields.includes(query);
-  });
+  // Handle Product Click
+  const handleCardClick = (productId) => router.push(`/products/${productId}`);
 
-  const handleCardClick = (productId) => {
-    router.push(`/products/${productId}`);
-  };
+  // Generate JSON-LD structured data
+  const structuredData = useMemo(() => {
+    return {
+      __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": `محصولات ${activeCategory === "all" ? "ستاره یخی" : activeCategory}`,
+        "description": `مشاهده و خرید ${activeCategory === "all" ? "انواع لوستر و آباژور" : activeCategory} با طراحی خاص و کیفیت بالا.`,
+        "url": `https://www.setareyakhi.ir/products${activeCategory !== "all" ? `?category=${activeCategory}` : ""}`,
+        "numberOfItems": filteredProducts.length,
+        "itemListElement": filteredProducts.map((product, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "Product",
+            "name": product.name,
+            "description": product.description,
+            "image": `https://www.setareyakhi.ir${product.images[0]}`,
+            "url": `https://www.setareyakhi.ir/products/${product.id}`,
+            "brand": { "@type": "Brand", "name": "ستاره یخی" },
+            "category": product.category,
+            "sku": product.id,
+            "inStock": product.inStock ? "true" : "false",
+          },
+        })),
+      }),
+    };
+  }, [activeCategory, filteredProducts]);
 
-  // ✅ Desktop & Tablet Layout
-  const renderDesktop = () => (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#ffffffff", pt: "150px" }}>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        {/* Page Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h2"
-            sx={{
-              color: "#000000ff",
-              fontWeight: "bold",
-              fontSize: { xs: "2rem", md: "3rem" },
-              mb: 1,
-              textAlign: "center",
-            }}
-          >
-            محصولات
-          </Typography>
-        </Box>
+  // Product Card (shared component)
+  const ProductCard = ({ product }) => (
+    <Card
+      onClick={() => handleCardClick(product.id)}
+      aria-label={`مشاهده جزئیات ${product.name}`}
+      sx={{
+        width: 300,
+        height: 340,
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+        color: "#fff",
+        backgroundColor: "#0c0d16ff",
+        "&:hover": {
+          transform: "translateY(-8px)",
+          boxShadow: "0 10px 18px rgba(0,0,0,0.5)",
+        },
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      {/* Product Image */}
+      <Box sx={{ position: "relative", height: 240, width: "100%" }}>
+        <Image
+          src={product.images[0]}
+          alt={product.name}
+          fill
+          loading="lazy"
+          style={{ objectFit: "cover" }}
+          sizes="(max-width: 768px) 100vw, 25vw"
+        />
+        {product.tags?.length > 0 && (
+          <Box sx={{ position: "absolute", top: 10, left: 10, display: "flex", gap: 1 }}>
+            {product.tags.map((tag, i) => (
+              <Chip
+                key={i}
+                label={tag}
+                size="small"
+                sx={{
+                  bgcolor: "#D4AF37",
+                  color: "#000",
+                  fontSize: "0.7rem",
+                  fontWeight: "bold",
+                }}
+              />
+            ))}
+          </Box>
+        )}
+      </Box>
 
-        {/* 🔽 Filter Section (Dropdown + Search Bar) */}
-        <Box
+      {/* Product Info (No Price) */}
+      <CardContent
+        sx={{
+          p: 2.5,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          flexGrow: 1,
+          textAlign: "center",
+        }}
+      >
+        <Typography
+          variant="h4"
           sx={{
-            mb: 6,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-            px: { xs: 2, md: 4 }, // same padding as grid
+            mb: 1,
+            fontWeight: "bold",
+            fontSize: "1.1rem",
+            lineHeight: 1.3,
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              flexWrap: "wrap",
-              gap: 2,
-              width: "100%",
-              maxWidth: "1200px", // align with grid width
-            }}
-          >
-            {/* Dropdown for Categories */}
-            <TextField
-              select
-              label="دسته‌بندی"
-              value={activeCategory}
-              onChange={(e) => setActiveCategory(e.target.value)}
-              sx={{
-                flex: "1 1 250px",
-                maxWidth: 250,
-                bgcolor: "rgba(248, 246, 241, 0.59)",
-                borderRadius: 1,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 1,
-                },
-              }}
-            >
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  {category.name}
-                </MenuItem>
-              ))}
-            </TextField>
+          {product.name}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ color: "#bbb", fontSize: "0.9rem", lineHeight: 1.4 }}
+        >
+          {product.category}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
 
-            {/* Search Bar */}
-            <TextField
-              label="جستجو در محصولات..."
-              variant="outlined"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{
-                flex: "1 1 350px",
-                maxWidth: 350,
-                bgcolor: "rgba(248, 246, 241, 0.59)",
-                borderRadius: 1,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 1,
-                },
-              }}
-            />
-          </Box>
-        </Box>
+  // Shared search + filter controls
+  const FilterSection = ({ compact = false }) => (
+    <Box
+      sx={{
+        mb: compact ? 4 : 6,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 2,
+        px: compact ? 1 : 4,
+      }}
+    >
+      <TextField
+        select
+        label="دسته‌بندی محصولات"
+        value={activeCategory}
+        onChange={(e) => setActiveCategory(e.target.value)}
+        sx={{
+          flex: "1 1 250px",
+          maxWidth: 250,
+          bgcolor: "rgba(248,246,241,0.59)",
+          borderRadius: 1,
+        }}
+        aria-label="انتخاب دسته‌بندی محصولات"
+      >
+        {categories.map((category) => (
+          <MenuItem key={category.id} value={category.id}>
+            {category.name}
+          </MenuItem>
+        ))}
+      </TextField>
 
-        {/* Products Grid - Centered */}
-        <Grid container spacing={4} justifyContent="center">
-          {filteredProducts.map((product) => (
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              lg={3}
-              key={product.id}
-              sx={{ display: "flex", justifyContent: "center" }}
-            >
-              <Card
-                sx={{
-                  width: 300,
-                  height: 350,
-                  cursor: "pointer",
-                  transition: "all 0.3s ease-in-out",
-                  color: "#ffffffff",
-                  backgroundColor: "#0c0d16ff",
-                  "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: "0 12px 20px rgba(0, 0, 0, 0.76)",
-                  },
-                  display: "flex",
-                  flexDirection: "column",
-                  overflow: "hidden",
-                }}
-                onClick={() => handleCardClick(product.id)}
-              >
-                {/* Product Image */}
-                <Box
-                  sx={{
-                    position: "relative",
-                    height: 250,
-                    width: "100%",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
-                  {product.tags && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 10,
-                        left: 10,
-                        display: "flex",
-                        gap: 1,
-                      }}
-                    >
-                      {product.tags.map((tag, index) => (
-                        <Chip
-                          key={index}
-                          label={tag}
-                          size="small"
-                          sx={{
-                            bgcolor: "#D4AF37",
-                            color: "#000",
-                            fontSize: "0.7rem",
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  )}
-                </Box>
-
-                {/* Product Info */}
-                <CardContent
-                  sx={{
-                    p: 3,
-                    flexGrow: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      mb: 1,
-                      fontWeight: "bold",
-                      textAlign: "center",
-                    }}
-                  >
-                    {product.name}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "text.secondary",
-                      textAlign: "center",
-                    }}
-                  >
-                    {product.category}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
-        {filteredProducts.length === 0 && (
-          <Typography
-            sx={{
-              textAlign: "center",
-              mt: 4,
-              fontSize: "1.2rem",
-              color: "#555",
-            }}
-          >
-            محصولی با این مشخصات یافت نشد.
-          </Typography>
-        )}
-      </Container>
+      <TextField
+        label="جستجو در محصولات..."
+        variant="outlined"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        sx={{
+          flex: "1 1 350px",
+          maxWidth: 350,
+          bgcolor: "rgba(248,246,241,0.59)",
+          borderRadius: 1,
+        }}
+        aria-label="جستجو در بین محصولات"
+      />
     </Box>
   );
 
-  // ✅ Mobile Layout
-  const renderMobile = () => (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#ffffffff", pt: "70px" }}>
-      <Container
-        sx={{
-          py: 3,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        {/* Page Header */}
+  const ProductsGrid = () => (
+    <>
+      {/* Product Count */}
+      <Box sx={{ mb: 3, textAlign: "center" }}>
+        <Typography variant="h3" sx={{ color: "#333", fontSize: "1rem" }}>
+          نمایش {filteredProducts.length} محصول از {products.length} محصول
+        </Typography>
+      </Box>
+
+      {/* Grid */}
+      <Grid container spacing={4} justifyContent="center">
+        {filteredProducts.map((p) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={p.id}>
+            <ProductCard product={p} />
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Empty State */}
+      {filteredProducts.length === 0 && (
+        <Box sx={{ textAlign: "center", mt: 6 }}>
+          <Typography variant="h3" sx={{ fontSize: "1.4rem", color: "#555", mb: 1 }}>
+            محصولی با این مشخصات یافت نشد
+          </Typography>
+          <Typography sx={{ color: "#777", fontSize: "0.95rem", maxWidth: 500, mx: "auto" }}>
+            لطفاً عبارت جستجو را تغییر دهید یا از دسته‌بندی دیگری استفاده کنید.
+          </Typography>
+        </Box>
+      )}
+    </>
+  );
+
+  // Desktop + Mobile Layouts
+  const Layout = ({ compact }) => (
+    <Box sx={{ minHeight: "100vh", bgcolor: "#fff", pt: compact ? "80px" : "150px" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={structuredData} />
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ textAlign: "center", mb: 4 }}>
           <Typography
-            variant="h4"
+            variant="h1"
             sx={{
-              color: "#000000ff",
+              color: "#000",
               fontWeight: "bold",
+              fontSize: compact ? "1.8rem" : "2.8rem",
               mb: 1,
             }}
           >
-            محصولات
+            محصولات ستاره یخی
           </Typography>
-        </Box>
-
-        {/* Filters (Stacked, same width as cards) */}
-        <Box
-          sx={{
-            mb: 4,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 2,
-            width: "100%",
-          }}
-        >
-          <TextField
-            select
-            label="دسته‌بندی"
-            value={activeCategory}
-            onChange={(e) => setActiveCategory(e.target.value)}
-            sx={{
-              width: 280, // same as product card width
-              bgcolor: "rgba(248, 246, 241, 0.59)",
-              borderRadius: 1,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 1,
-              },
-            }}
-          >
-            {categories.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.name}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            label="جستجو در محصولات..."
-            variant="outlined"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{
-              width: 280, // same as product card width
-              bgcolor: "rgba(248, 246, 241, 0.59)",
-              borderRadius: 1,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 1,
-                
-              },
-            }}
-          />
-        </Box>
-
-        {/* Products Grid - Centered */}
-        <Grid container spacing={2} justifyContent="center">
-          {filteredProducts.map((product) => (
-            <Grid
-              item
-              xs={10}
-              sm={6}
-              key={product.id}
-              sx={{ display: "flex", justifyContent: "center" }}
-            >
-              <Card
-                sx={{
-                  width: 280,
-                  height: 320,
-                  cursor: "pointer",
-                  transition: "all 0.3s ease-in-out",
-                  color: "#fff",
-                  backgroundColor: "#0c0d16ff",
-                  "&:hover": {
-                    transform: "translateY(-5px)",
-                    boxShadow: "0 8px 16px rgba(0,0,0,0.12)",
-                  },
-                  display: "flex",
-                  flexDirection: "column",
-                  overflow: "hidden",
-                }}
-                onClick={() => handleCardClick(product.id)}
-              >
-                <Box
-                  sx={{
-                    position: "relative",
-                    height: 200,
-                    width: "100%",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
-                </Box>
-                <CardContent
-                  sx={{
-                    p: 2,
-                    flexGrow: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{ mb: 1, fontSize: "1rem", textAlign: "center" }}
-                  >
-                    {product.name}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "text.secondary", textAlign: "center" }}
-                  >
-                    {product.category}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
-        {filteredProducts.length === 0 && (
           <Typography
+            variant="h2"
             sx={{
-              textAlign: "center",
-              mt: 4,
-              fontSize: "1rem",
-              color: "#555",
+              color: "#666",
+              fontSize: compact ? "0.9rem" : "1.2rem",
+              lineHeight: 1.6,
+              maxWidth: "600px",
+              mx: "auto",
             }}
           >
-            محصولی با این مشخصات یافت نشد.
+            خرید آنلاین بهترین لوستر و آباژور با طراحی مدرن و کیفیت عالی
           </Typography>
-        )}
+        </Box>
+
+        <FilterSection compact={compact} />
+        <ProductsGrid />
       </Container>
     </Box>
   );
@@ -432,9 +300,7 @@ export default function ProductsPage() {
   return (
     <>
       <ProductsNavbar />
-      {deviceType === "desktop" || deviceType === "tablet"
-        ? renderDesktop()
-        : renderMobile()}
+      {deviceType === "mobile" ? <Layout compact /> : <Layout />}
     </>
   );
 }
